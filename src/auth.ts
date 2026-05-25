@@ -1,5 +1,6 @@
 import NextAuth, { DefaultSession } from "next-auth";
 import CredentialProviders from "next-auth/providers/credentials";
+import { JWT } from "next-auth/jwt";
 
 declare module "next-auth" {
   interface User {
@@ -9,6 +10,12 @@ declare module "next-auth" {
     user: {
       role?: "ADMIN" | "USER";
     } & DefaultSession["user"];
+  }
+}
+declare module "next-auth/jwt" {
+  interface JWT {
+    role?: "ADMIN" | "USER";
+    loginTime?: number;
   }
 }
 
@@ -32,6 +39,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             role: "ADMIN",
           };
         }
+        if (
+          credentials?.email === "user@test.com" &&
+          credentials?.password === "123456"
+        ) {
+          return {
+            id: "2",
+            name: "User",
+            email: "user@test.com",
+            role: "USER",
+          };
+        }
         return null;
       },
     }),
@@ -40,6 +58,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.role = user.role;
+        token.loginTime = Date.now(); //start time
+      }
+      const sixMonths = 6 * 30 * 24 * 60 * 60 * 1000; // absloute max session login time
+      if (token.loginTime && Date.now() - token.loginTime > sixMonths) {
+        return null;
       }
       return token;
     },
@@ -50,5 +73,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
   },
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+    maxAge: 7 * 24 * 60 * 60,
+    updateAge: 24 * 60 * 60,
+  },
 });
