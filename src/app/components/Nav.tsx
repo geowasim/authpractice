@@ -30,13 +30,31 @@ const Nav = async () => {
           </Link>
         )}
       </div>
-      {session?.user && (
+      {isLoggedIn && (
         <>
           <span className="font-bold text-right text-amber-200">
             {" "}
             Welcome, {session.user.name}
           </span>
         </>
+      )}
+      {!isLoggedIn ? (
+        <Link href="/api/auth/signin">Sign In</Link>
+      ) : (
+        <form
+          action={async () => {
+            "use server";
+            await signOut();
+          }}
+        >
+          <button
+            className=" hover:underline 
+            hover:text-amber-700 transition cursor-pointer "
+            type="submit"
+          >
+            SignOut
+          </button>
+        </form>
       )}
     </nav>
   );
