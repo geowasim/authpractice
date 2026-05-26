@@ -30,16 +30,16 @@ const Nav = async () => {
           </Link>
         )}
       </div>
-      {isLoggedIn && (
+      {session?.user && (
         <>
           <span className="font-bold text-right text-amber-200">
             {" "}
-            Welcome, {session.user.name}
+            Welcome, {session?.user?.name}
           </span>
         </>
       )}
-      {!isLoggedIn ? (
-        <Link href="/api/auth/signin">Sign In</Link>
+      {!session?.user ? (
+        <Link href="/signin">Sign In</Link>
       ) : (
         <form
           action={async () => {
